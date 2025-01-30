@@ -1,4 +1,4 @@
-var arr = [3, 2, 5, 1, 2];
+var arr = [3, 5, 1, 5, 10, 1];
 
 function Shift(array, i, j) {
     if (i <= j) {
