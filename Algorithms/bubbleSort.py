@@ -17,7 +17,7 @@ def BubbleSort(A, N):
         print("While initiated.") if print_interaction == True else None
         swapped = False
         print("Var swapped to False.") if print_interaction == True else None
-        for i in range(len(A) - 1):
+        for i in range(0, N-1): # N-1 since N is not inclusive.
             print(f"Interaction {i}") if print_interaction == True else None
             if (A[i] > A[i+1]):
                 print(f"Array before swap: {A}")
