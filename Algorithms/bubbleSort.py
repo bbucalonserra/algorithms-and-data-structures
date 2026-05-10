@@ -2,7 +2,7 @@
 def swap(A, i, j):
     temp = A[i]
     A[i] = A[j]
-    A[j] = temp
+    A[j] = temp # NOTE: In python we don't need temp variable, we could just: A[i], A[j] = A[j], A[i].
 
     return A
 
