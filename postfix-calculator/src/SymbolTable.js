@@ -1,13 +1,32 @@
-/** Class representing the symbol table, therefore, with the variables that will be stored to perform calculations using 
+/** Class representing the symbol table, therefore, with the variables that will be stored to perform calculations using
  * postfix. */
 export class SymbolTable {
     constructor() {
         /**
-         * Create an empty map to associate variable names (keys) with their values. A map is a native JavaScript data 
-         * structure (since ES6) to store pair of key values. It's used to store the symbol table, where they are:
-         * mutable, any data can be a key, and its order is always preseved.
+         * Create an Array with a fized size of 26 "slots", one for each letter from A to Z. This is called direct 
+         * addressing, and is cheaper in memory than a Map for this specific, fixed and small namespace.
          */
-        this.table = new Map();
+        this.table = new Array(26);
+    }
+
+    /**
+     * Check whether a key is a single letter from A to Z, the only valid variable names.
+     * @return {boolean}
+     * @example
+     * table.isValidKey('A'); // returns true
+     */
+    isValidKey(key) {
+        return /^[A-Z]$/.test(key);
+    }
+
+    /**
+     * Calculate the position of a letter within the fixed-size table, e.g. 'A' is 0, 'B' is 1, and so on.
+     * @return {number}
+     * @example
+     * table.indexFor('B'); // returns 1
+     */
+    indexFor(key) {
+        return key.charCodeAt(0) - 'A'.charCodeAt(0);
     }
 
     /**
@@ -17,10 +36,10 @@ export class SymbolTable {
      * table.insert('A', 3); // table now holds A -> 3
      */
     insert(key, value) {
-        if (!/^[A-Z]$/.test(key)) {
+        if (!this.isValidKey(key)) {
             throw new Error(`Invalid variable name: ${key}`);
         }
-        this.table.set(key, value);
+        this.table[this.indexFor(key)] = value;
     }
 
     /**
@@ -31,7 +50,10 @@ export class SymbolTable {
      * table.search('A'); // returns 3
      */
     search(key) {
-        return this.table.get(key);
+        if (!this.isValidKey(key)) {
+            return undefined;
+        }
+        return this.table[this.indexFor(key)];
     }
 
     /**
@@ -42,15 +64,19 @@ export class SymbolTable {
      * table.delete('A'); // returns true, table no longer holds A
      */
     delete(key) {
-        return this.table.delete(key);
+        if (!this.isValidKey(key) || this.table[this.indexFor(key)] === undefined) {
+            return false;
+        }
+        this.table[this.indexFor(key)] = undefined;
+        return true;
     }
 
     /**
      * View table.
-     * @return {map}
+     * @return {array}
      * @example
      * table.insert('A', 3);
-     * table.printTable(); // returns Map { 'A' => 3 }
+     * table.printTable(); // returns [3, undefined, undefined, ...] (26 slots, A is the first one)
      */
     printTable() {
         return this.table;

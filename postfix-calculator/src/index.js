@@ -1,43 +1,66 @@
-// Import modules from program.
-import { Stack } from './Stack.js';
-import { SymbolTable } from './SymbolTable.js';
+import { createInterface } from 'node:readline';
 import { Tokeniser } from './Tokeniser.js';
+import { Interpreter } from './Interpreter.js';
 
-// const stack = new Stack();
-// stack.push(3);
-// stack.push(4);
-// stack.push(5);
-// stack.push(50);
-// console.log(stack.pop());      // espera 5
-// console.log(stack.peek());     // espera 4
-// console.log(stack.isEmpty());  // espera false
-// console.log(stack.printStack());
+// The SymbolTable that is part of the Interpreter has been created outside of a loop, so it will
+// be maintained throughout all of the lines input into it.
+const tokeniser = new Tokeniser();
+const interpreter = new Interpreter();
 
+// Set up the interface which will read from the terminal and write to the terminal.
+const rl = createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 
-// const table = new SymbolTable();
-// table.insert('A', 3);
-// table.insert('B', 10);
-// console.log(table.printTable());
-// console.log(table.search('A'));   // espera 3
-// console.log(table.search('B'));   // espera 10
-// console.log(table.search('Z'));   // espera undefined
+// Briefly explain the expected input before any lines have been typed.
+console.log('Write the calculus in postfix notation (e.g. 3 4 5 + *), tokens MUST BE SEPARATED BY SPACES.');
+console.log('Type "trace" to see the step-by-step evaluation of the last line AFTER receiving the results from the postfix notation.');
 
-// table.insert('A', 99);             // update: A passa a valer 99
-// console.log(table.search('A'));   // espera 99
+// Show the prompt the first time before any lines have been input.
+rl.prompt();
 
-// console.log(table.delete('A'));   // espera true
-// console.log(table.search('A'));   // espera undefined
+// Execute on every line entered when the user presses enter, passing in the whole line.
+rl.on('line', (line) => {
+    // Remove any leading or trailing spaces, so " 4 5 6 * * " is treated the same as "4 5 6 * *".
+    const trimmedLine = line.trim();
 
-// try {
-//     table.insert('1', 5);          // chave inválida (não é letra A-Z)
-// } catch (err) {
-//     console.log(err.message);      // espera "Invalid variable name: 1"
-// }
+    // Show the trace recorded by the previous call to interpret(), instead of evaluating it as postfix.
+    if (trimmedLine === 'trace') {
+        printTrace();
+        rl.prompt();
+        return;
+    }
 
-const token = new Tokeniser();
+    // It will take the trimmed line and create an array of tokens (separated by spaces).
+    const tokens = tokeniser.tokenise(trimmedLine);
 
-var string = "Hello to all my friends"
+    // For each of the tokens passed in, evaluate them against the existing symbol
+    // table and the status of the stack and return the state of the stack.
+    const stackContents = interpreter.interpret(tokens);
 
-var tokenisedString = token.tokenise(string)
+    // Print the state of the stack using the same format as the class PDF (i.e. [a b c]).
+    console.log(formatStack(stackContents));
 
-console.log(tokenisedString);
+    // Display the prompt again and wait for the next line to be entered.
+    rl.prompt();
+});
+
+// Cleanly terminate the process if the input stream closes (i.e. if the user presses ctrl+D).
+rl.on('close', () => {
+    process.exit(0);
+});
+
+// Reverse the array before joining, since the Stack stores the top of the stack at the end.
+function formatStack(items) {
+    return `[${[...items].reverse().join(' ')}]`;
+}
+
+// Print every step recorded for the last interpreted line.
+function printTrace() {
+    if (!interpreter.trace) {
+        console.log('No line has been interpreted yet.');
+        return;
+    }
+
+    for (const step of interpreter.printTrace()) {
+        console.log(`${step.token} | ${step.action} | ${formatStack(step.stackAfter)}`);
+    }
+}

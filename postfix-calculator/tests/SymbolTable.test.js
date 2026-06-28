@@ -38,8 +38,10 @@ test('delete returns false when the key does not exist', () => {
     assert.strictEqual(table.delete('A'), false);
 });
 
-test('printTable returns the underlying map', () => {
+test('printTable returns the underlying fixed-size array', () => {
     const table = new SymbolTable();
     table.insert('A', 3);
-    assert.deepStrictEqual(table.printTable(), new Map([['A', 3]]));
+    const expected = new Array(26);
+    expected[0] = 3;
+    assert.deepStrictEqual(table.printTable(), expected);
 });
