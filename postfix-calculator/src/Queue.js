@@ -1,4 +1,4 @@
-/** Class representing the queue data structure, therefore, with its main property as being a FIFO (First In First Out).
+/** Class representing the queue data structure, therefore, with its main property as being a FILO (First In Last Out).
  * The queue has a fixed capacity, so that the history it holds never grows beyond what the target hardware
  * described in the coursework PDF could hold.
  */
